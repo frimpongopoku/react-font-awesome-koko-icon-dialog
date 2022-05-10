@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Proptypes from "prop-types";
 import "./IconDialog.css";
 import debounce from "lodash.debounce";
 import { smartString } from "../utils";
@@ -92,7 +93,7 @@ function IconDialog({
           ) : (
             <>
               <i className="fa fa-search" />
-              <p>{placeholder || "Click To Select A Font Awesome Icon..."}</p>
+              <p>{placeholder}</p>
             </>
           )}
         </div>
@@ -139,6 +140,55 @@ function IconDialog({
 
 export default IconDialog;
 
+IconDialog.propTypes = {
+  /**
+   * Class that styles the main floating dialog box
+   */
+  rootContainerClassName: Proptypes.string,
+  /**
+   * Class name that will be attached to each icon item
+   */
+  iconItemClassName: Proptypes.string,
+  /**
+   * Class name that will style the search box
+   */
+  searchBoxClassName: Proptypes.string,
+  /**
+   * Custom HTML content that should be displayed to trigger the floating dialog
+   */
+  triggerElement: Proptypes.element,
+  /**
+   * Class that styles the area where fonts are displayed
+   */
+  iconListAreaClassName: Proptypes.string,
+  /**
+   * Warm text to urge users to choose an icon
+   */
+  placeholder: Proptypes.string,
+  /**
+   * A function that is fired when an icon is clicked 
+   * @param iconName
+   */
+  onItemSelected: Proptypes.func,
+  /**
+   * The function exports important internal functions that can be retrieved and used outside the component when the 
+   * component mounts 
+   * @param clear 
+   * @param toggle 
+   */
+  onMount: Proptypes.func,
+};
+
+IconDialog.defaultProps = {
+  rootContainerClassName: "",
+  iconItemClassName: "",
+  searchBoxClassName: "",
+  triggerElement: null,
+  iconListAreaClassName: "",
+  placeholder: "Click to select a font awesome icon",
+};
+
+
 // --------------------------------------------------------------------------------------
 const Dialog = ({
   recents,
@@ -164,12 +214,11 @@ const Dialog = ({
       name = name.slice(1).join(" ") || "";
       return (
         <span
-        className="d-icon-span"
+          className="d-icon-span"
           style={{
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
-         
           }}
         >
           <span
