@@ -14,6 +14,12 @@ function IconDialog({
   value,
   maxRecents,
   recentItemsStorageKey,
+  rootContainerClassName,
+  searchBoxClassName,
+  customTrigger,
+  customIconRender,
+  iconListAreaClassName,
+  onMount,
 }) {
   const icons = ICONS.ICON_FILES;
   const [iconSet, setIconSet] = useState(icons.slice(0, perPage));
@@ -68,6 +74,10 @@ function IconDialog({
     iconName && addToRecents(iconName);
     setShow(false);
   };
+  const clearFunction = () => {
+    selectIcon(null);
+    setShow(true);
+  };
 
   const searchForIconWhenUserPausesTyping = debounce(search, 200);
 
@@ -76,48 +86,52 @@ function IconDialog({
 
   const data = searched.length ? searched : iconSet;
   return (
-    <div className="icon-d-root">
-      <div className="icon-d-trigger-area">
-        <div className="default-trigger" onClick={() => setShow(true)}>
-          {selected ? (
-            <>
-              <i
-                className={`fa ${selected}`}
-                style={{
-                  border: "solid 2px black",
-                  borderRadius: 3,
-                  padding: "8px",
-                }}
-              />
-            </>
-          ) : (
-            <>
-              <i className="fa fa-search" />
-              <p>{placeholder}</p>
-            </>
+    <div className={`icon-d-root ${rootContainerClassName}`}>
+      {customTrigger ? (
+        customTrigger(clear, () => setShow(true))
+      ) : (
+        <div className="icon-d-trigger-area">
+          <div className="default-trigger" onClick={() => setShow(true)}>
+            {selected ? (
+              <>
+                <i
+                  className={`fa ${selected}`}
+                  style={{
+                    border: "solid 2px black",
+                    borderRadius: 3,
+                    padding: "8px",
+                  }}
+                />
+              </>
+            ) : (
+              <>
+                <i className="fa fa-search" />
+                <p>{placeholder}</p>
+              </>
+            )}
+          </div>
+          {selected && (
+            <span
+              onClick={() => {
+                clearFunction();
+              }}
+              style={{
+                textDecoration: "underline",
+                color: "red",
+                fontSize: 12,
+                cursor: "pointer",
+                marginTop: 5,
+              }}
+            >
+              Clear
+            </span>
           )}
         </div>
-        {selected && (
-          <span
-            onClick={() => {
-              selectIcon(null);
-              setShow(true);
-            }}
-            style={{
-              textDecoration: "underline",
-              color: "red",
-              fontSize: 12,
-              cursor: "pointer",
-              marginTop: 5,
-            }}
-          >
-            Clear
-          </span>
-        )}
-      </div>
+      )}
       {show && (
         <Dialog
           {...{
+            customIconRender,
             recents,
             text,
             data,
@@ -154,9 +168,11 @@ IconDialog.propTypes = {
    */
   searchBoxClassName: Proptypes.string,
   /**
-   * Custom HTML content that should be displayed to trigger the floating dialog
+   * function that returns custom HTML content that should be displayed to trigger the floating dialog
+   * @param clearFunction
+   * @param triggerFunction
    */
-  triggerElement: Proptypes.element,
+  customTrigger: Proptypes.func,
   /**
    * Class that styles the area where fonts are displayed
    */
@@ -166,17 +182,24 @@ IconDialog.propTypes = {
    */
   placeholder: Proptypes.string,
   /**
-   * A function that is fired when an icon is clicked 
+   * A function that is fired when an icon is clicked
    * @param iconName
    */
   onItemSelected: Proptypes.func,
   /**
-   * The function exports important internal functions that can be retrieved and used outside the component when the 
-   * component mounts 
-   * @param clear 
-   * @param toggle 
+   * The function exports important internal functions that can be retrieved and used outside the component when the
+   * component mounts
+   * @param clear
+   * @param toggle
    */
   onMount: Proptypes.func,
+
+  /**
+   * Custom function that is used to render each icon
+   * @param iconObject
+   * @param iconIndex
+   */
+  customIconRender: Proptypes.func,
 };
 
 IconDialog.defaultProps = {
@@ -187,7 +210,6 @@ IconDialog.defaultProps = {
   iconListAreaClassName: "",
   placeholder: "Click to select a font awesome icon",
 };
-
 
 // --------------------------------------------------------------------------------------
 const Dialog = ({
@@ -204,6 +226,7 @@ const Dialog = ({
   nextPage,
   close,
   selectIcon,
+  customIconRender,
 }) => {
   const userSearchedAnThereAreNoIcons = text && !searched.length;
 
@@ -212,6 +235,7 @@ const Dialog = ({
       var name = ic.split(" ") || [];
       name = (name[1] || "").split("-") || [];
       name = name.slice(1).join(" ") || "";
+      if (customIconRender) return customIconRender(ic, index);
       return (
         <span
           className="d-icon-span"
@@ -242,7 +266,7 @@ const Dialog = ({
         <div>
           <input
             placeholder="Enter text that describes the icon..."
-            className="icon-d-textbox"
+            className={`"icon-d-textbox" ${searchBoxClassName}`}
             onChange={search}
           />
         </div>

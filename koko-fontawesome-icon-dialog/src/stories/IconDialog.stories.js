@@ -1,5 +1,5 @@
 import React from "react";
-import IconDialog from "./icon dialog/IconDialog";
+import IconDialog from "../icon dialog/IconDialog";
 
 
 export default {
